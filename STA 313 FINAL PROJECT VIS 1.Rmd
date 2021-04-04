@@ -1,0 +1,87 @@
+---
+title: "STA 313 FINAL PROJECT VIS 1"
+author: "JS4326"
+date: "04/04/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(plotly)
+
+emission <- read.csv("C:/Users/User/Desktop/STA313-FINAL-PROJECT/data/emission_data.csv")
+temp <- read.csv("C:/Users/User/Desktop/STA313-FINAL-PROJECT/data/GlobalTemperatures.csv")
+
+emission <- filter(emission, Country=="World")
+emission <- t(emission)
+emission <- data.frame(r1=row.names(emission),emission, row.names = NULL)
+x<-substr(emission$r1,2,5)
+emission <- emission%>%mutate(Year=x)
+emission <- emission[-1,]
+
+
+y <- substr(temp$dt, 1, 4)
+temp <- temp %>% mutate(Year = y)
+
+wrd_em<-emission %>% filter(Year>=1960 & Year<=2015)
+wrd_temp<-temp %>% group_by(Year) %>% summarise(temperature=sum(LandAverageTemperature))%>%filter(Year>=1960)
+wrd_temp <-wrd_temp %>% mutate (annual_avg_temp = temperature/12)
+
+wrd_em$Year=as.numeric(wrd_em$Year)
+wrd_temp$Year=as.numeric(wrd_temp$Year)
+wrd_em$emission=as.numeric(wrd_em$emission)
+
+temp_vs_em <-right_join(wrd_em,wrd_temp,by="Year")
+```
+```{r}
+# Libraries
+library(ggplot2)
+library(dplyr)
+library(patchwork) # To display 2 charts together
+library(hrbrthemes)
+
+
+
+# Most basic line chart
+p1 <- ggplot(temp_vs_em, aes(x=Year, y=temperature)) +
+  geom_line(color="#69b3a2", size=2) +
+  ggtitle("Temperature: range 1-10") +
+  theme_ipsum()
+  
+p2 <- ggplot(temp_vs_em, aes(x=Year, y=emission)) +
+  geom_line(color="grey",size=2) +
+  ggtitle("Price: range 1-100") +
+  theme_ipsum()
+
+coeff<-10
+cool_graph <- ggplot(temp_vs_em, aes(x=Year)) +
+  geom_line(aes(y=temperature), size=2, color=temperatureColor) + 
+  geom_line(aes(y=emission), size=2, color=priceColor) +
+
+  
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Temperature (Celsius °)",
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*coeff,name="Emission")
+  ) + 
+  
+  theme_ipsum() +
+
+  theme(
+    axis.title.y = element_text(color = temperatureColor, size=13),
+    axis.title.y.right = element_text(color = priceColor, size=13)
+  ) +
+
+  ggtitle("Temperature down, price up")
+cool_graph
+```
+
+
+
+
+
+
+
