@@ -1,11 +1,10 @@
 ---
-title: "Graph 3 forest area"
-author: "Lingyun Wang, 3940"
-date: "4/11/2021"
+title: "Graph 3 Forest Area Change"
+date: "4/16/2021"
 output: html_document
 ---
 
-```{r}
+```{r, include=FALSE}
 library(dplyr)
 library(tidyverse)
 library(ggthemes)
@@ -23,64 +22,52 @@ forest <-read.csv("/Users/lucywang/StudioProjects/STA313-FINAL-PROJECT/data/fore
 
 income <-read.csv("/Users/lucywang/StudioProjects/STA313-FINAL-PROJECT/data/income level.csv")
 
-forest <- forest %>%
-  rename(Avg_Rate_of_Change = X)%>%
-  rename(NAME = Country.Name)
+forest_income <- left_join(forest, income, by="Country.Code")
 
-forest<- left_join(forest, income, by="Country.Code")
+world_spdf <- st_read("/Users/lucywang/Downloads/TM_WORLD_BORDERS_SIMPL-0.3/TM_WORLD_BORDERS_SIMPL-0.3.shp")%>%
+  rename(country_code = ISO3)
 
-#forest_area_graph = plot_geo(forest,locationmode="world")%>%
-  #add_trace(locations=~Country.Code,z=~Avg_Rate_of_Change,
-            #color=~Avg_Rate_of_Change)
-#forest_area_graph
+forest1 <- forest_income %>%
+  rename(Avg_Rate_of_Change = X.x)%>%
+  rename(country_code = Country.Code)%>%
+  select(c(Country.Name, country_code, Avg_Rate_of_Change, IncomeGroup))
 ```
 
-
-```{r}
-world_spdf <- st_read("/Users/lucywang/Downloads/TM_WORLD_BORDERS_SIMPL-0.3/TM_WORLD_BORDERS_SIMPL-0.3.shp")
-
-forest<- forest%>%right_join(world_spdf, by="NAME")
-
-forest<- forest%>%
+```{r, include=FALSE}
+forest_map<- right_join(forest1, world_spdf, by="country_code")%>%
   mutate(avg_change_level = case_when(Avg_Rate_of_Change <= 0 ~
                                         "Lost",
                                Avg_Rate_of_Change > 0 & Avg_Rate_of_Change <= 1 ~
-                               "Gain(Low) ",
+                               "Gain(Low)",
                                Avg_Rate_of_Change >1 & Avg_Rate_of_Change <= 2 ~
                                  "Gain(Med)",
                                Avg_Rate_of_Change >2 ~"Gain(High)" ,
-                               TRUE ~ "Lost"))%>%
-  mutate(avg_change_level = fct_relevel(avg_change_level, "Gain(High)",
-                                                    "Gain(Med)", 
-                                                    "Gain(Low)", 
-                                                    "Lost"))%>%
+                               TRUE ~ "No data"))%>%
   mutate(text = paste("Country Name: ", NAME, "\nAvg Rate of Change: ", Avg_Rate_of_Change, "\nIncome Level: ", IncomeGroup, sep=""))
 ```
 
-```{r}
-forest_map<-ggplot(forest)+
-  geom_sf(aes(fill = avg_change_level, text=text))+
+
+```{r, include=FALSE, warning=FALSE}
+area_map<-ggplot(data = forest_map, aes(geometry=geometry))+
+  geom_sf(aes(fill = factor(avg_change_level, levels = c("Gain(High)","Gain(Med)", "Gain(Low)", "Lost", "No data")), text=text))+
   theme_map()+
   labs(title = "World Forest Land Area Average Rate of Change",
        subtitle = "From 1990 To 2018") +
-  theme(legend.position =c(0.92, 0))+ 
+  theme(legend.position =c(0.9, 0))+ 
   theme(legend.title = element_blank())+
-  scale_fill_manual(values = c("darkgreen", "palegreen", "red3", "forestgreen"))#+
-   #scale_color_viridis(discrete=FALSE)
-forest_map
+  scale_fill_manual(values = c("#00441b", "#238b45", "#74c476", "#cb181d", "gray"))
+
 ```
 
 
-```{r}
-ggplotly(forest_map, tooltip="text")%>%
-  layout(title = list(text = paste0('World Forest Land Area Average Rate of Change',
+```{r, echo=FALSE}
+ggplotly(area_map, tooltip="text")%>%
+  layout(title = list(text = paste('World Forest Land Area Average Rate of Change',
                                     '<br>',
                                     '<sup>',
                                     'From 1990 To 2018',
-                                    '</sup>')))%>%
-  layout(legend = list(orientation = 'h',x = 0, y = 1))%>%
+                                    '</sup>'), x = 0, y = 0.9))%>%
+  layout(legend = list(orientation = 'h', x = 0, y = 0.1))%>%
   layout(legend=list(title=list(text='<b> Forest Land </b>')))%>%
-  layout(showarrow = F, xref='paper', yref='paper', 
-      xanchor='right', yanchor='auto', xshift=0.5, yshift=1,
-      font=list(size=14, color="grey"))
+  layout(font=list(size=14, color="grey"))
 ```
