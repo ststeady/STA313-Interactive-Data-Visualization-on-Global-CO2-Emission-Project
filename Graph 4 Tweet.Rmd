@@ -1,11 +1,10 @@
 ---
 title: "Graph 4 Tweet"
-author: "Lingyun Wang, 3940"
-date: "4/4/2021"
+date: "4/16/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r, include=FALSE}
 library(sf)
 library(tidyverse)
 library(ggthemes)
@@ -30,7 +29,7 @@ showtext_auto()
 ```
 
 
-```{r}
+```{r, include=FALSE}
 graph4 <-read.csv("/Users/lucywang/StudioProjects/STA313-FINAL-PROJECT/data/twitter_sentiment_data.csv")
 
 
@@ -54,7 +53,7 @@ waffleee <- c(`anti(-1)` =3990, `neutral(0)` = 7715,
 
 
 
-```{r}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 birdwaffle<-waffle(#graph4$sentiment = graph4$graph_n,
   c(`anti(-1)` = 4, `neutral(0)` = 8,`pro(1)`=23, `news(2)` = 9), 
   rows = 4, colors=c("tomato", "palegreen", "skyblue", "plum1"),
@@ -65,28 +64,15 @@ birdwaffle<-waffle(#graph4$sentiment = graph4$graph_n,
   title = "Is Climate Change Man-Made? \nResponses on Twitter",
   legend_pos="top") +
   theme(plot.title = element_text(size=12, face="bold", hjust = 0.5, vjust=0))+
-  coord_equal() +
+  coord_equal() 
   #theme_enhance_waffle() +
-  theme(legend.text = element_text(size = 8, vjust = 0.5))
+  #theme(legend.text = element_text(size = 8, vjust = 0.5))
 
 birdwaffle
 ```
-```{r}
-#ggplotly(birdwaffle)
-  
-```
 
 
 
-```{r}
-
-waffle(waffleee/1000, rows=5,  
-       colors=c("#44D2AC", "#E48B8B", "#B67093", 
-                "#3A9ABD"), size=8)
-       #title="Age Groups bifurcation", 
-       #xlab="1 square = 1000 persons")
-
-```
 
 
 
