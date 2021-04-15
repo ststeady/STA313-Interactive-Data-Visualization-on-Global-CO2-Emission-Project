@@ -13,8 +13,6 @@ library(extrafont)
 library(waffle)
 library(hrbrthemes)
 library(ggplot2)
-library(waffle)
-library(ggwaffle)
 library(rgeos)
 library(plotly)
 library(viridis)
@@ -39,7 +37,8 @@ graph4 <-read.csv("/Users/lucywang/StudioProjects/STA313-FINAL-PROJECT/data/twit
 graph4 <- graph4%>%select(-c(tweetid, message))%>%
   group_by(sentiment)%>%
   count()%>%
-  mutate(n=round(as.numeric(n)/1000,0))%>%
+  mutate(graph_n=round(as.numeric(n)/1000,0))%>%
+  mutate(percentage=round(n/43943*100,1))%>%
   mutate(sentiment = case_when(sentiment == -1 ~ "Anti(-1)",
                                sentiment == 0 ~ "Neutral(0)",
                                sentiment == 1 ~ "Pro(1)",
@@ -50,13 +49,14 @@ graph4
 
 waffleee <- c(`anti(-1)` =3990, `neutral(0)` = 7715,
               `pro(1)`=22962, `news(2)` = 9276)
+
 ```
 
 
 
 ```{r}
-birdwaffle<-waffle(graph4,
-  #c(`anti(-1)` = 4, `neutral(0)` = 8,`pro(1)`=23, `news(2)` = 9), 
+birdwaffle<-waffle(#graph4$sentiment = graph4$graph_n,
+  c(`anti(-1)` = 4, `neutral(0)` = 8,`pro(1)`=23, `news(2)` = 9), 
   rows = 4, colors=c("tomato", "palegreen", "skyblue", "plum1"),
   use_glyph = "twitter", 
   glyph_size = 7, 
@@ -66,13 +66,14 @@ birdwaffle<-waffle(graph4,
   legend_pos="top") +
   theme(plot.title = element_text(size=12, face="bold", hjust = 0.5, vjust=0))+
   coord_equal() +
-  theme_enhance_waffle() +
+  #theme_enhance_waffle() +
   theme(legend.text = element_text(size = 8, vjust = 0.5))
 
 birdwaffle
 ```
 ```{r}
-leaflet(birdwaffle)
+#ggplotly(birdwaffle)
+  
 ```
 
 
