@@ -10,12 +10,11 @@ library(tidyverse)
 library(ggthemes)
 library(tmaptools)
 library(ggmap)
-library(leaflet)
 library(RColorBrewer)
-library(rgeos)
+#library(rgeos)
 library(plotly)
 library(readr)
-library(rgdal)
+#library(rgdal)
 library(sf)
 
 forest <-read.csv("/Users/lucywang/StudioProjects/STA313-FINAL-PROJECT/data/forest area.csv")
@@ -32,6 +31,12 @@ forest1 <- forest_income %>%
   rename(country_code = Country.Code)%>%
   select(c(Country.Name, country_code, Avg_Rate_of_Change, IncomeGroup))
 ```
+
+```{r}
+min(forest1$Avg_Rate_of_Change)
+max(forest1$Avg_Rate_of_Change)
+```
+
 
 ```{r, include=FALSE}
 forest_map<- right_join(forest1, world_spdf, by="country_code")%>%
